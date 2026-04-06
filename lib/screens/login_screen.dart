@@ -1,8 +1,9 @@
-import 'package:fan_control/main.dart';
+import 'package:fan_control/providers/auth_provider.dart';
 import 'package:fan_control/widgets/btn.dart';
 import 'package:fan_control/widgets/fan.dart';
 import 'package:fan_control/widgets/inp.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,21 +16,26 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   String? _loginError;
-
-  // Додаємо змінну стану для видимості пароля
   bool _obscurePassword = true;
 
   Future<void> _handleLogin() async {
-    final success = await authService.login(
+    final auth = context.read<AuthProvider>();
+
+    // Перевірка інтернету (Вимога Лаби 4)
+    if (auth.isOffline) {
+      setState(() => _loginError = 'No internet connection');
+      return;
+    }
+
+    final success = await auth.login(
       _emailController.text,
       _passwordController.text,
     );
 
-    if (success) {
-      if (mounted) Navigator.pushReplacementNamed(context, '/home');
-    } else {
+    if (!success) {
       setState(() => _loginError = 'Invalid email or password');
     }
+    // Navigator.push/pop НЕ ПОТРІБЕН. main.dart сам оновить home.
   }
 
   @override
@@ -51,13 +57,9 @@ class _LoginScreenState extends State<LoginScreen> {
               'Password',
               controller: _passwordController,
               isPassword: true,
-              // Використовуємо змінну стану
               obscureText: _obscurePassword,
-              // Перемикаємо стан при натисканні на іконку
               onToggleVisibility: () {
-                setState(() {
-                  _obscurePassword = !_obscurePassword;
-                });
+                setState(() => _obscurePassword = !_obscurePassword);
               },
             ),
             const SizedBox(height: 24),
