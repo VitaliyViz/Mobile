@@ -1,9 +1,12 @@
+import 'package:fan_control/repositories/local_storage_repository.dart';
 import 'package:fan_control/screens/dashboard_screen.dart';
 import 'package:fan_control/screens/login_screen.dart';
 import 'package:fan_control/screens/profile_screen.dart';
 import 'package:fan_control/screens/register_screen.dart';
+import 'package:fan_control/services/auth_service.dart';
 import 'package:flutter/material.dart';
 
+final authService = AuthService(LocalStorageRepository());
 void main() => runApp(const SmartFanApp());
 
 class SmartFanApp extends StatefulWidget {
