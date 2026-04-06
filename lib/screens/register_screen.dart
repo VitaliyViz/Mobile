@@ -1,8 +1,8 @@
-import 'package:fan_control/main.dart';
+import 'package:fan_control/providers/auth_provider.dart';
 import 'package:fan_control/widgets/btn.dart';
 import 'package:fan_control/widgets/inp.dart';
 import 'package:flutter/material.dart';
-
+import 'package:provider/provider.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -19,25 +19,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
   String? _nameError;
   String? _emailError;
   String? _passwordError;
-
-  // Додаємо змінну стану для видимості пароля
   bool _obscurePassword = true;
 
   Future<void> _handleRegister() async {
+    final auth = context.read<AuthProvider>();
+
     setState(() {
-      _nameError = authService.validateName(_nameController.text);
-      _emailError = authService.validateEmail(_emailController.text);
-      _passwordError = authService.validatePassword(_passwordController.text);
+      _nameError = auth.service.validateName(_nameController.text);
+      _emailError = auth.service.validateEmail(_emailController.text);
+      _passwordError = auth.service.validatePassword(_passwordController.text);
     });
 
     if (_nameError == null && _emailError == null && _passwordError == null) {
-      await authService.register(
+      await auth.register(
         _nameController.text,
         _emailController.text,
         _passwordController.text,
       );
       if (mounted) {
-        Navigator.pushReplacementNamed(context, '/home');
+        Navigator.of(context).pop();
       }
     }
   }
@@ -52,7 +52,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
           children: [
             const Text(
               'Join Smart Fan',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 20),
             AppInp(
@@ -72,13 +75,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
               controller: _passwordController,
               errorText: _passwordError,
               isPassword: true,
-              // Використовуємо змінну стану замість жорсткого true
               obscureText: _obscurePassword,
-              // Передаємо функцію, яка перемикає стан
               onToggleVisibility: () {
-                setState(() {
-                  _obscurePassword = !_obscurePassword;
-                });
+                setState(() => _obscurePassword = !_obscurePassword);
               },
             ),
             const SizedBox(height: 24),
