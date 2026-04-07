@@ -3,7 +3,7 @@ import 'package:fan_control/models/user_model.dart';
 import 'package:fan_control/repositories/auth_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class LocalStorageRepository implements AuthRepository {
+class LocalStorageRepository extends AuthRepository {
   static const String _usersKey = 'registered_users';
   static const String _currentUserKey = 'current_user_email';
 
