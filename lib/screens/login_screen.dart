@@ -21,7 +21,6 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _handleLogin() async {
     final auth = context.read<AuthProvider>();
 
-    // Перевірка інтернету (Вимога Лаби 4)
     if (auth.isOffline) {
       setState(() => _loginError = 'No internet connection');
       return;
@@ -35,7 +34,6 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!success) {
       setState(() => _loginError = 'Invalid email or password');
     }
-    // Navigator.push/pop НЕ ПОТРІБЕН. main.dart сам оновить home.
   }
 
   @override
