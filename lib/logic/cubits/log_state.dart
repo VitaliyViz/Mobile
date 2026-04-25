@@ -1,7 +1,10 @@
 part of 'log_cubit.dart';
 
-abstract class LogState {
+abstract class LogState extends Equatable {
   const LogState();
+
+  @override
+  List<Object?> get props => [];
 }
 
 class LogInitial extends LogState {
@@ -18,18 +21,14 @@ class LogLoaded extends LogState {
   const LogLoaded(this.logs);
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is LogLoaded &&
-          runtimeType == other.runtimeType &&
-          logs == other.logs;
-
-  @override
-  int get hashCode => logs.hashCode;
+  List<Object?> get props => [logs];
 }
 
 class LogError extends LogState {
   final String message;
 
   const LogError(this.message);
+
+  @override
+  List<Object?> get props => [message];
 }

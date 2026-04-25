@@ -1,18 +1,18 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:equatable/equatable.dart';
 import 'package:fan_control/models/user_model.dart';
 import 'package:fan_control/services/auth_service.dart';
-import 'package:fan_control/repositories/local_storage_repository.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 part 'auth_state.dart';
 
 class AuthCubit extends Cubit<AuthState> {
-  final AuthService _authService = AuthService(LocalStorageRepository());
+  final AuthService _authService;
 
   AuthService get authService => _authService;
 
-  AuthCubit() : super(const AuthInitial()) {
+  AuthCubit(this._authService) : super(const AuthInitial()) {
     _initConnectivity();
     _checkConnectivity();
     checkAuth();
@@ -26,9 +26,7 @@ class AuthCubit extends Cubit<AuthState> {
 
   void _checkConnectivity() {
     Connectivity().onConnectivityChanged.listen(
-      (List<ConnectivityResult> result) {
-        _updateConnectivity(result);
-      },
+      _updateConnectivity,
     );
   }
 
@@ -61,7 +59,7 @@ class AuthCubit extends Cubit<AuthState> {
           ));
         }
       }
-    } catch (e) {
+    } on Exception catch (e) {
       emit(AuthError(e.toString()));
     }
   }
@@ -85,7 +83,7 @@ class AuthCubit extends Cubit<AuthState> {
       } else {
         emit(const AuthError('Login failed'));
       }
-    } catch (e) {
+    } on Exception catch (e) {
       emit(AuthError(e.toString()));
     }
   }
@@ -95,7 +93,7 @@ class AuthCubit extends Cubit<AuthState> {
       emit(const AuthLoading());
       await _authService.register(name, email, password);
       await login(email, password);
-    } catch (e) {
+    } on Exception catch (e) {
       emit(AuthError(e.toString()));
     }
   }
@@ -106,7 +104,7 @@ class AuthCubit extends Cubit<AuthState> {
       await prefs.remove('auth_token');
       await _authService.logout();
       emit(const AuthInitial());
-    } catch (e) {
+    } on Exception catch (e) {
       emit(AuthError(e.toString()));
     }
   }
