@@ -1,8 +1,7 @@
-import 'package:fan_control/models/user_model.dart';
-import 'package:fan_control/providers/auth_provider.dart';
-import 'package:fan_control/providers/log_provider.dart';
+import 'package:fan_control/logic/cubits/auth_cubit.dart';
+import 'package:fan_control/logic/cubits/log_cubit.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class LogsScreen extends StatefulWidget {
   const LogsScreen({super.key});
@@ -15,36 +14,53 @@ class _LogsScreenState extends State<LogsScreen> {
   @override
   void initState() {
     super.initState();
-    _checkLogsState();
+    _setupLogs();
   }
 
-  void _checkLogsState() async {
-    final User? user = await context.read<AuthProvider>().getUser();
-    if (user != null && mounted) {
-      context.read<LogProvider>().setUser(user.email);
+  Future<void> _setupLogs() async {
+    final authState = context.read<AuthCubit>().state;
+    if (authState is AuthLoaded && authState.user != null) {
+      context.read<LogCubit>().setupUser(authState.user!.email);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final List<Map<String, dynamic>> history = 
-        context.watch<LogProvider>().history;
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Temperature History'),
         centerTitle: true,
       ),
-      body: history.isEmpty
-          ? const Center(child: Text('No logs found for this account'))
-          : ListView.builder(
+      body: BlocBuilder<LogCubit, LogState>(
+        builder: (BuildContext context, LogState state) {
+          if (state is LogLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (state is LogError) {
+            return Center(child: Text('Error: ${state.message}'));
+          }
+
+          if (state is LogLoaded) {
+            if (state.logs.isEmpty) {
+              return const Center(
+                child: Text('No logs found for this account'),
+              );
+            }
+
+            return ListView.builder(
               padding: const EdgeInsets.all(16),
-              itemCount: history.length,
+              itemCount: state.logs.length,
               itemBuilder: (BuildContext context, int index) {
-                final Map<String, dynamic> log = history[index];
+                final Map<String, dynamic> log = state.logs[index];
                 return _buildLogItem(log);
               },
-            ),
+            );
+          }
+
+          return const Center(child: Text('No logs found for this account'));
+        },
+      ),
     );
   }
 

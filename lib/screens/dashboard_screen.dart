@@ -1,9 +1,8 @@
-import 'package:fan_control/models/user_model.dart';
-import 'package:fan_control/providers/auth_provider.dart';
-import 'package:fan_control/providers/log_provider.dart';
+import 'package:fan_control/logic/cubits/auth_cubit.dart';
+import 'package:fan_control/logic/cubits/log_cubit.dart';
 import 'package:fan_control/services/mqtt_service.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -22,9 +21,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _setupUserLogs() async {
-    final User? user = await context.read<AuthProvider>().getUser();
-    if (user != null && mounted) {
-      context.read<LogProvider>().setUser(user.email);
+    final authState = context.read<AuthCubit>().state;
+    if (authState is AuthLoaded && authState.user != null) {
+      context.read<LogCubit>().setupUser(authState.user!.email);
     }
   }
 
@@ -40,15 +39,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
         builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
           if (snapshot.hasData) {
             final String temp = snapshot.data!;
-            
+
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              context.read<LogProvider>().addLog(temp);
+              context.read<LogCubit>().addLog(temp);
             });
 
             return Center(
               child: Container(
                 padding: const EdgeInsets.symmetric(
-                  vertical: 40, 
+                  vertical: 40,
                   horizontal: 30,
                 ),
                 decoration: BoxDecoration(
@@ -62,8 +61,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
                     const Icon(
-                      Icons.thermostat, 
-                      size: 80, 
+                      Icons.thermostat,
+                      size: 80,
                       color: Colors.orange,
                     ),
                     const SizedBox(height: 10),
@@ -91,7 +90,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     const Text(
                       'Current Temperature',
                       style: TextStyle(
-                        fontSize: 16, 
+                        fontSize: 16,
                         color: Colors.blueGrey,
                       ),
                     ),
