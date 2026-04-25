@@ -1,9 +1,9 @@
-import 'package:fan_control/providers/auth_provider.dart';
+import 'package:fan_control/logic/cubits/auth_cubit.dart';
 import 'package:fan_control/widgets/btn.dart';
 import 'package:fan_control/widgets/fan.dart';
 import 'package:fan_control/widgets/inp.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -19,56 +19,67 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscurePassword = true;
 
   Future<void> _handleLogin() async {
-    final auth = context.read<AuthProvider>();
+    final authCubit = context.read<AuthCubit>();
+    final authState = authCubit.state;
 
-    if (auth.isOffline) {
+    if (authState is AuthLoaded && authState.isOffline) {
       setState(() => _loginError = 'No internet connection');
       return;
     }
 
-    final success = await auth.login(
+    authCubit.login(
       _emailController.text,
       _passwordController.text,
     );
-
-    if (!success) {
-      setState(() => _loginError = 'Invalid email or password');
-    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const FanImg(80),
-            const SizedBox(height: 40),
-            if (_loginError != null)
-              Text(_loginError!, style: const TextStyle(color: Colors.red)),
-            const SizedBox(height: 8),
-            AppInp('Email', controller: _emailController),
-            const SizedBox(height: 16),
-            AppInp(
-              'Password',
-              controller: _passwordController,
-              isPassword: true,
-              obscureText: _obscurePassword,
-              onToggleVisibility: () {
-                setState(() => _obscurePassword = !_obscurePassword);
-              },
-            ),
-            const SizedBox(height: 24),
-            AppBtn('Login', _handleLogin),
-            TextButton(
-              onPressed: () => Navigator.pushNamed(context, '/reg'),
-              child: const Text('Create account'),
-            ),
-          ],
+    return BlocListener<AuthCubit, AuthState>(
+      listener: (BuildContext context, AuthState state) {
+        if (state is AuthError) {
+          setState(() => _loginError = 'Invalid email or password');
+        }
+      },
+      child: Scaffold(
+        body: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const FanImg(80),
+              const SizedBox(height: 40),
+              if (_loginError != null)
+                Text(_loginError!, style: const TextStyle(color: Colors.red)),
+              const SizedBox(height: 8),
+              AppInp('Email', controller: _emailController),
+              const SizedBox(height: 16),
+              AppInp(
+                'Password',
+                controller: _passwordController,
+                isPassword: true,
+                obscureText: _obscurePassword,
+                onToggleVisibility: () {
+                  setState(() => _obscurePassword = !_obscurePassword);
+                },
+              ),
+              const SizedBox(height: 24),
+              AppBtn('Login', _handleLogin),
+              TextButton(
+                onPressed: () => Navigator.pushNamed(context, '/reg'),
+                child: const Text('Create account'),
+              ),
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 }
