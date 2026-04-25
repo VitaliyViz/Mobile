@@ -1,8 +1,11 @@
 import 'package:fan_control/firebase_options.dart';
+import 'package:fan_control/injection_container.dart';
 import 'package:fan_control/logic/cubits/auth_cubit.dart';
 import 'package:fan_control/logic/cubits/log_cubit.dart';
+import 'package:fan_control/repositories/log_repository.dart';
 import 'package:fan_control/screens/login_screen.dart';
 import 'package:fan_control/screens/register_screen.dart';
+import 'package:fan_control/services/auth_service.dart';
 import 'package:fan_control/widgets/main_navigation_holder.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -15,11 +18,17 @@ void main() async {
     options: FirebaseConfig.options,
   );
 
+  setupServiceLocator();
+
   runApp(
     MultiBlocProvider(
       providers: [
-        BlocProvider(create: (_) => AuthCubit()),
-        BlocProvider(create: (_) => LogCubit()),
+        BlocProvider(
+          create: (_) => AuthCubit(getIt<AuthService>()),
+        ),
+        BlocProvider(
+          create: (_) => LogCubit(getIt<LogRepository>()),
+        ),
       ],
       child: const SmartFanApp(),
     ),
@@ -68,5 +77,3 @@ class _SmartFanAppState extends State<SmartFanApp> {
     );
   }
 }
-
-

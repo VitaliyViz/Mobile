@@ -27,7 +27,7 @@ class _MainNavigationHolderState extends State<MainNavigationHolder> {
     return BlocBuilder<AuthCubit, AuthState>(
       builder: (BuildContext context, AuthState state) {
         final bool isOffline =
-            state is AuthLoaded ? state.isOffline : false;
+            state is AuthLoaded && state.isOffline;
 
         final List<Widget> pages = <Widget>[
           const DashboardScreen(),

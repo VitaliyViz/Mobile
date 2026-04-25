@@ -41,7 +41,8 @@ class LogRepository {
     });
   }
 
-  Future<void> addLog(String value, List<Map<String, dynamic>> currentLogs) async {
+  Future<void> addLog(String value, List<Map<String, dynamic>> currentLogs) 
+  async {
     if (_dbRef == null) return;
     if (currentLogs.isEmpty || currentLogs.first['value'] != value) {
       final String time = DateFormat('HH:mm:ss').format(DateTime.now());

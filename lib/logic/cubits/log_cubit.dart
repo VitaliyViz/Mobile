@@ -1,12 +1,13 @@
 import 'package:fan_control/repositories/log_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:equatable/equatable.dart';
 
 part 'log_state.dart';
 
 class LogCubit extends Cubit<LogState> {
-  final LogRepository _logRepository = LogRepository();
+  final LogRepository _logRepository;
 
-  LogCubit() : super(const LogInitial());
+  LogCubit(this._logRepository) : super(const LogInitial());
 
   Future<void> setupUser(String email) async {
     try {
@@ -19,13 +20,13 @@ class LogCubit extends Cubit<LogState> {
             emit(LogLoaded(logs));
           }
         },
-        onError: (error) {
+        onError: (Object error) {
           if (!isClosed) {
             emit(LogError(error.toString()));
           }
         },
       );
-    } catch (e) {
+    } on Exception catch (e) {
       if (!isClosed) {
         emit(LogError(e.toString()));
       }
@@ -38,7 +39,7 @@ class LogCubit extends Cubit<LogState> {
       if (currentState is LogLoaded) {
         await _logRepository.addLog(value, currentState.logs);
       }
-    } catch (e) {
+    } on Exception catch (e) {
       if (!isClosed) {
         emit(LogError(e.toString()));
       }
@@ -51,7 +52,7 @@ class LogCubit extends Cubit<LogState> {
       if (!isClosed) {
         emit(const LogLoaded([]));
       }
-    } catch (e) {
+    } on Exception catch (e) {
       if (!isClosed) {
         emit(LogError(e.toString()));
       }
