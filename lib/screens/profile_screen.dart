@@ -1,5 +1,4 @@
 import 'package:fan_control/logic/cubits/auth_cubit.dart';
-import 'package:fan_control/models/user_model.dart';
 import 'package:fan_control/widgets/btn.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -21,26 +20,23 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   bool _isPasswordVisible = false;
 
-  void _confirmLogout() {
+  void _confirmLogout(BuildContext context) {
     showDialog<void>(
       context: context,
-      builder: (BuildContext context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Confirm Logout'),
         content: const Text('Are you sure you want to log out?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Cancel'),
           ),
           TextButton(
             onPressed: () {
               context.read<AuthCubit>().logout();
-              Navigator.pop(context);
+              Navigator.pop(dialogContext);
             },
-            child: const Text(
-              'Logout',
-              style: TextStyle(color: Colors.red),
-            ),
+            child: const Text('Logout', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -54,51 +50,44 @@ class _ProfileScreenState extends State<ProfileScreen> {
         : Colors.blueAccent.withAlpha(15);
 
     return BlocBuilder<AuthCubit, AuthState>(
-      builder: (BuildContext context, AuthState state) {
-        final User? currentUser =
-            state is AuthLoaded ? state.user : null;
+      builder: (context, state) {
+        final user = state is AuthLoaded ? state.user : null;
 
         return Scaffold(
           body: Column(
             children: [
               Expanded(
                 flex: 3,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(color: headerColor),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const SizedBox(height: 40),
-                        const CircleAvatar(
-                          radius: 65,
-                          backgroundColor: Colors.white,
-                          child: Icon(
-                            Icons.person,
-                            size: 70,
-                            color: Colors.black,
+                child: Container(
+                  width: double.infinity,
+                  color: headerColor,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 40),
+                      const CircleAvatar(
+                        radius: 65,
+                        backgroundColor: Colors.white,
+                        child: Icon(
+                          Icons.person,
+                          size: 70,
+                          color: Colors.black
                           ),
-                        ),
-                        const SizedBox(height: 20),
-                        Text(
-                          currentUser?.name ?? 'Loading...',
-                          style: const TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          currentUser?.email ?? '',
-                          style: const TextStyle(color: Colors.grey),
-                        ),
-                        const SizedBox(height: 12),
-                        Switch(
-                          value: widget.isDark,
-                          onChanged: widget.onThemeChanged,
-                        ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        user?.name ?? 'Loading...',
+                        style: const TextStyle(
+                            fontSize: 28, fontWeight: FontWeight.bold),
+                      ),
+                      Text(user?.email ?? '',
+                          style: const TextStyle(color: Colors.grey)),
+                      const SizedBox(height: 12),
+                      Switch(
+                        value: widget.isDark,
+                        onChanged: widget.onThemeChanged,
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -107,30 +96,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 40),
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       ListTile(
                         title: const Text('Password'),
-                        subtitle: Text(
-                          _isPasswordVisible
-                              ? (currentUser?.password ?? '****')
-                              : '********',
-                        ),
+                        subtitle: Text(_isPasswordVisible
+                            ? (user?.password ?? '****')
+                            : '********'),
                         trailing: IconButton(
-                          icon: Icon(
-                            _isPasswordVisible
-                                ? Icons.visibility
-                                : Icons.visibility_off,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _isPasswordVisible = !_isPasswordVisible;
-                            });
-                          },
+                          icon: Icon(_isPasswordVisible
+                              ? Icons.visibility
+                              : Icons.visibility_off),
+                          onPressed: () => setState(() => 
+                              _isPasswordVisible = !_isPasswordVisible),
                         ),
                       ),
                       const Spacer(),
-                      AppBtn('Logout', _confirmLogout),
+                      AppBtn('Logout', () => _confirmLogout(context)),
                       const SizedBox(height: 20),
                     ],
                   ),

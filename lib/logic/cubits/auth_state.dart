@@ -27,7 +27,11 @@ class AuthLoaded extends AuthState {
   });
 
   @override
-  List<Object?> get props => [user, isAuthenticated, isOffline];
+  List<Object?> get props => [
+        user,
+        isAuthenticated,
+        isOffline,
+      ];
 }
 
 class AuthError extends AuthState {
@@ -37,13 +41,4 @@ class AuthError extends AuthState {
 
   @override
   List<Object?> get props => [message];
-}
-
-class AuthOfflineChanged extends AuthState {
-  final bool isOffline;
-
-  const AuthOfflineChanged(this.isOffline);
-
-  @override
-  List<Object?> get props => [isOffline];
 }

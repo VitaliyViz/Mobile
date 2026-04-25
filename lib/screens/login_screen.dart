@@ -18,7 +18,7 @@ class _LoginScreenState extends State<LoginScreen> {
   String? _loginError;
   bool _obscurePassword = true;
 
-  Future<void> _handleLogin() async {
+  void _handleLogin() {
     final authCubit = context.read<AuthCubit>();
     final authState = authCubit.state;
 
@@ -36,9 +36,9 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthCubit, AuthState>(
-      listener: (BuildContext context, AuthState state) {
+      listener: (context, state) {
         if (state is AuthError) {
-          setState(() => _loginError = 'Invalid email or password');
+          setState(() => _loginError = state.message);
         }
       },
       child: Scaffold(
@@ -50,7 +50,10 @@ class _LoginScreenState extends State<LoginScreen> {
               const FanImg(80),
               const SizedBox(height: 40),
               if (_loginError != null)
-                Text(_loginError!, style: const TextStyle(color: Colors.red)),
+                Text(
+                  _loginError!,
+                  style: const TextStyle(color: Colors.red),
+                ),
               const SizedBox(height: 8),
               AppInp('Email', controller: _emailController),
               const SizedBox(height: 16),

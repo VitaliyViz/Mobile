@@ -2,10 +2,10 @@ import 'package:fan_control/firebase_options.dart';
 import 'package:fan_control/injection_container.dart';
 import 'package:fan_control/logic/cubits/auth_cubit.dart';
 import 'package:fan_control/logic/cubits/log_cubit.dart';
+import 'package:fan_control/repositories/auth_repository.dart';
 import 'package:fan_control/repositories/log_repository.dart';
 import 'package:fan_control/screens/login_screen.dart';
 import 'package:fan_control/screens/register_screen.dart';
-import 'package:fan_control/services/auth_service.dart';
 import 'package:fan_control/widgets/main_navigation_holder.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -24,7 +24,7 @@ void main() async {
     MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (_) => AuthCubit(getIt<AuthService>()),
+          create: (_) => AuthCubit(getIt<AuthRepository>()),
         ),
         BlocProvider(
           create: (_) => LogCubit(getIt<LogRepository>()),
@@ -52,9 +52,8 @@ class _SmartFanAppState extends State<SmartFanApp> {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<AuthCubit, AuthState>(
-      builder: (BuildContext context, AuthState state) {
-        final bool isAuthenticated =
-            state is AuthLoaded && state.isAuthenticated;
+      builder: (context, state) {
+        final isAuthenticated = state is AuthLoaded && state.isAuthenticated;
 
         return MaterialApp(
           debugShowCheckedModeBanner: false,
@@ -69,8 +68,8 @@ class _SmartFanAppState extends State<SmartFanApp> {
                   onThemeChanged: _toggleTheme,
                 )
               : const LoginScreen(),
-          routes: <String, WidgetBuilder>{
-            '/reg': (BuildContext context) => const RegisterScreen(),
+          routes: {
+            '/reg': (_) => const RegisterScreen(),
           },
         );
       },

@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:fan_control/services/mqtt_setup.dart';
+import 'package:flutter/foundation.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 
 class MqttService {
@@ -7,34 +9,45 @@ class MqttService {
     'flutter_client_vitaliy_${DateTime.now().millisecondsSinceEpoch}',
   );
 
-  Stream<String> get temperatureStream async* {
+  final StreamController<String> _tempController =
+      StreamController<String>.broadcast();
+  bool _isInitialized = false;
+
+  Stream<String> get temperatureStream {
+    if (!_isInitialized) {
+      _initMqtt();
+    }
+    return _tempController.stream;
+  }
+
+  Future<void> _initMqtt() async {
+    _isInitialized = true;
     client.keepAlivePeriod = 20;
-    
+
+    final clientId = 'flutter_client_vitaliy_${DateTime.now().millisecond}';
+
     final connMessage = MqttConnectMessage()
-        .withClientIdentifier('flutter_client_vitaliy')
+        .withClientIdentifier(clientId)
         .startClean()
         .withWillQos(MqttQos.atMostOnce);
     client.connectionMessage = connMessage;
 
     try {
       await client.connect();
-    } catch (e) {
-      client.disconnect();
-      yield 'Error';
-      return;
-    }
+      if (client.connectionStatus!.state == MqttConnectionState.connected) {
+        client.subscribe('vitaliy/test/temp', MqttQos.atMostOnce);
 
-    if (client.connectionStatus!.state == MqttConnectionState.connected) {
-      client.subscribe('vitaliy/test/temp', MqttQos.atMostOnce);
-
-      await for (final List<MqttReceivedMessage<MqttMessage>> messages 
-          in client.updates!) {
-        final recMess = messages[0].payload as MqttPublishMessage;
-        final payload = MqttPublishPayload.bytesToStringAsString(
-          recMess.payload.message,
-        );
-        yield payload;
+        client.updates!.listen((messages) {
+          final recMess = messages[0].payload as MqttPublishMessage;
+          final payload = MqttPublishPayload.bytesToStringAsString(
+            recMess.payload.message,
+          );
+          _tempController.add(payload);
+        });
       }
+    } catch (e) {
+      debugPrint('MQTT Error: $e');
+      _isInitialized = false;
     }
   }
 }
