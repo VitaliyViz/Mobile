@@ -1,7 +1,8 @@
-import 'package:fan_control/main.dart';
 import 'package:fan_control/models/user_model.dart';
+import 'package:fan_control/providers/auth_provider.dart';
 import 'package:fan_control/widgets/btn.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class ProfileScreen extends StatefulWidget {
   final bool isDark;
@@ -28,26 +29,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _loadUserData() async {
-    final user = await authService.getCurrentUser();
-    setState(() {
-      _currentUser = user;
-    });
+    final User? user = await context.read<AuthProvider>().getUser();
+    setState(() => _currentUser = user);
   }
 
-  Future<void> _handleLogout() async {
-    if (mounted) {
-      Navigator.pushNamedAndRemoveUntil(context, '/', (r) => false);
-    }
+  void _confirmLogout() {
+    showDialog<void>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('Confirm Logout'),
+        content: const Text('Are you sure you want to log out?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              context.read<AuthProvider>().logout();
+              Navigator.pop(context);
+            },
+            child: const Text(
+              'Logout',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final Color headerColor = widget.isDark
+    final headerColor = widget.isDark
         ? Colors.white.withAlpha(5)
         : Colors.blueAccent.withAlpha(15);
-    const Color avatarBg = Colors.white;
-    final Color avatarBorder =
-        widget.isDark ? Colors.transparent : Colors.grey.shade300;
 
     return Scaffold(
       body: Column(
@@ -62,20 +78,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const SizedBox(height: 40),
-                    Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: avatarBorder, width: 2),
-                      ),
-                      child: const CircleAvatar(
-                        radius: 65,
-                        backgroundColor: avatarBg,
-                        child: Icon(
-                          Icons.person,
-                          size: 70,
-                          color: Colors.black,
-                        ),
+                    const CircleAvatar(
+                      radius: 65,
+                      backgroundColor: Colors.white,
+                      child: Icon(
+                        Icons.person,
+                        size: 70,
+                        color: Colors.black,
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -87,8 +96,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
                     Text(
-                      _currentUser?.email ?? 'no-email@test.com',
-                      style: const TextStyle(color: Colors.grey, fontSize: 16),
+                      _currentUser?.email ?? '',
+                      style: const TextStyle(color: Colors.grey),
                     ),
                     const SizedBox(height: 12),
                     Switch(
@@ -128,7 +137,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                   const Spacer(),
-                  AppBtn('Logout', _handleLogout),
+                  AppBtn('Logout', _confirmLogout),
                   const SizedBox(height: 20),
                 ],
               ),
