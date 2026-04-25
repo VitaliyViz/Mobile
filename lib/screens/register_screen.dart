@@ -21,31 +21,35 @@ class _RegisterScreenState extends State<RegisterScreen> {
   String? _passwordError;
   bool _obscurePassword = true;
 
-  Future<void> _handleRegister() async {
-    final authCubit = context.read<AuthCubit>();
-
+  void _handleRegister() {
     setState(() {
-      _nameError = authCubit.authService.validateName(_nameController.text);
-      _emailError = authCubit.authService.validateEmail(_emailController.text);
+      _nameError = _nameController.text.isEmpty ? 'Enter name' : null;
+      _emailError =
+          !_emailController.text.contains('@') ? 'Invalid email' : null;
       _passwordError =
-          authCubit.authService.validatePassword(_passwordController.text);
+          _passwordController.text.length < 6 ? 'Too short' : null;
     });
 
     if (_nameError == null && _emailError == null && _passwordError == null) {
-      authCubit.register(
-        _nameController.text,
-        _emailController.text,
-        _passwordController.text,
-      );
+      context.read<AuthCubit>().register(
+            _nameController.text,
+            _emailController.text,
+            _passwordController.text,
+          );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthCubit, AuthState>(
-      listener: (BuildContext context, AuthState state) {
+      listener: (context, state) {
         if (state is AuthLoaded && state.isAuthenticated) {
           Navigator.of(context).pop();
+        }
+        if (state is AuthError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.message)),
+          );
         }
       },
       child: Scaffold(

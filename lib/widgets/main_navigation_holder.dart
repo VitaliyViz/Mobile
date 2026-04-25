@@ -25,11 +25,10 @@ class _MainNavigationHolderState extends State<MainNavigationHolder> {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<AuthCubit, AuthState>(
-      builder: (BuildContext context, AuthState state) {
-        final bool isOffline =
-            state is AuthLoaded && state.isOffline;
+      builder: (context, state) {
+        final isOffline = state is AuthLoaded && state.isOffline;
 
-        final List<Widget> pages = <Widget>[
+        final pages = <Widget>[
           const DashboardScreen(),
           const LogsScreen(),
           ProfileScreen(
@@ -41,7 +40,7 @@ class _MainNavigationHolderState extends State<MainNavigationHolder> {
         return Scaffold(
           body: SafeArea(
             child: Column(
-              children: <Widget>[
+              children: [
                 if (isOffline)
                   Container(
                     width: double.infinity,
@@ -62,9 +61,9 @@ class _MainNavigationHolderState extends State<MainNavigationHolder> {
           ),
           bottomNavigationBar: BottomNavigationBar(
             currentIndex: _currentIndex,
-            onTap: (int index) => setState(() => _currentIndex = index),
+            onTap: (index) => setState(() => _currentIndex = index),
             type: BottomNavigationBarType.fixed,
-            items: const <BottomNavigationBarItem>[
+            items: const [
               BottomNavigationBarItem(
                 icon: Icon(Icons.dashboard_outlined),
                 activeIcon: Icon(Icons.dashboard),

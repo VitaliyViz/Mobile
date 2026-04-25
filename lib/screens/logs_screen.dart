@@ -1,28 +1,9 @@
-import 'package:fan_control/logic/cubits/auth_cubit.dart';
 import 'package:fan_control/logic/cubits/log_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class LogsScreen extends StatefulWidget {
+class LogsScreen extends StatelessWidget {
   const LogsScreen({super.key});
-
-  @override
-  State<LogsScreen> createState() => _LogsScreenState();
-}
-
-class _LogsScreenState extends State<LogsScreen> {
-  @override
-  void initState() {
-    super.initState();
-    _setupLogs();
-  }
-
-  Future<void> _setupLogs() async {
-    final authState = context.read<AuthCubit>().state;
-    if (authState is AuthLoaded && authState.user != null) {
-      context.read<LogCubit>().setupUser(authState.user!.email);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,39 +13,36 @@ class _LogsScreenState extends State<LogsScreen> {
         centerTitle: true,
       ),
       body: BlocBuilder<LogCubit, LogState>(
-        builder: (BuildContext context, LogState state) {
+        builder: (context, state) {
           if (state is LogLoading) {
             return const Center(child: CircularProgressIndicator());
           }
-
           if (state is LogError) {
             return Center(child: Text('Error: ${state.message}'));
           }
-
           if (state is LogLoaded) {
             if (state.logs.isEmpty) {
-              return const Center(
-                child: Text('No logs found for this account'),
-              );
+              return const Center(child: Text('No logs found'));
             }
-
             return ListView.builder(
               padding: const EdgeInsets.all(16),
               itemCount: state.logs.length,
-              itemBuilder: (BuildContext context, int index) {
-                final Map<String, dynamic> log = state.logs[index];
-                return _buildLogItem(log);
-              },
+              itemBuilder: (context, index) => _LogItem(log: state.logs[index]),
             );
           }
-
-          return const Center(child: Text('No logs found for this account'));
+          return const Center(child: Text('Initialize logs...'));
         },
       ),
     );
   }
+}
 
-  Widget _buildLogItem(Map<String, dynamic> log) {
+class _LogItem extends StatelessWidget {
+  final Map<String, dynamic> log;
+  const _LogItem({required this.log});
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -75,14 +53,14 @@ class _LogsScreenState extends State<LogsScreen> {
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: <Widget>[
+        children: [
           Row(
-            children: <Widget>[
+            children: [
               const Icon(Icons.history, color: Colors.blueAccent),
               const SizedBox(width: 15),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
+                children: [
                   Text(
                     '${log['value']}°C',
                     style: const TextStyle(fontWeight: FontWeight.bold),

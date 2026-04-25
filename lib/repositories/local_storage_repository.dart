@@ -3,16 +3,37 @@ import 'package:fan_control/models/user_model.dart';
 import 'package:fan_control/repositories/auth_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class LocalStorageRepository extends AuthRepository {
+class LocalStorageRepository implements AuthRepository {
   static const String _usersKey = 'registered_users';
   static const String _currentUserKey = 'current_user_email';
 
   @override
-  Future<void> saveUser(User user) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String? usersRaw = prefs.getString(_usersKey);
+  Future<User?> signIn(String email, String password) async {
+    final user = await findUser(email);
+    if (user != null) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_currentUserKey, email);
+      return user;
+    }
+    return null;
+  }
 
-    Map<String, dynamic> users = <String, dynamic>{};
+  @override
+  Future<void> signUp(String name, String email, String password) async {
+    final newUser = User(
+      name: name,
+      email: email,
+      password: password,
+    );
+    await saveUser(newUser);
+  }
+
+  @override
+  Future<void> saveUser(User user) async {
+    final prefs = await SharedPreferences.getInstance();
+    final usersRaw = prefs.getString(_usersKey);
+
+    var users = <String, dynamic>{};
     if (usersRaw != null) {
       users = jsonDecode(usersRaw) as Map<String, dynamic>;
     }
@@ -24,13 +45,12 @@ class LocalStorageRepository extends AuthRepository {
   }
 
   Future<User?> findUser(String email) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String? usersRaw = prefs.getString(_usersKey);
+    final prefs = await SharedPreferences.getInstance();
+    final usersRaw = prefs.getString(_usersKey);
 
     if (usersRaw == null) return null;
 
-    final Map<String, dynamic> users =
-        jsonDecode(usersRaw) as Map<String, dynamic>;
+    final users = jsonDecode(usersRaw) as Map<String, dynamic>;
     if (users.containsKey(email)) {
       return User.fromJson(users[email] as Map<String, dynamic>);
     }
@@ -39,15 +59,15 @@ class LocalStorageRepository extends AuthRepository {
 
   @override
   Future<User?> getUser() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String? currentEmail = prefs.getString(_currentUserKey);
+    final prefs = await SharedPreferences.getInstance();
+    final currentEmail = prefs.getString(_currentUserKey);
     if (currentEmail == null) return null;
     return findUser(currentEmail);
   }
 
   @override
   Future<void> clearUser() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_currentUserKey);
   }
 }
