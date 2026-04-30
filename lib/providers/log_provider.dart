@@ -29,8 +29,9 @@ class LogProvider extends ChangeNotifier {
           });
         });
 
-        newList.sort((a, b) =>
-            (b['timestamp'] as int).compareTo(a['timestamp'] as int));
+        newList.sort(
+            (a, b) => (b['timestamp'] as int).compareTo(a['timestamp'] as int),
+        );
         _history = newList;
         notifyListeners();
       }

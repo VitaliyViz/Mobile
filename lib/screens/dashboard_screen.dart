@@ -39,8 +39,8 @@ class DashboardScreen extends StatelessWidget {
             );
           }
 
-          final String lastDbValue = logState.logs.isNotEmpty 
-              ? logState.logs.first['value'].toString() 
+          final String lastDbValue = logState.logs.isNotEmpty
+              ? logState.logs.first['value'].toString()
               : '--';
 
           return StreamBuilder<String>(
@@ -49,7 +49,7 @@ class DashboardScreen extends StatelessWidget {
             builder: (context, snapshot) {
               final currentTemp = snapshot.data ?? lastDbValue;
 
-              if (snapshot.connectionState == ConnectionState.active && 
+              if (snapshot.connectionState == ConnectionState.active &&
                   snapshot.hasData) {
                 context.read<LogCubit>().addLog(snapshot.data!);
               }
@@ -95,16 +95,11 @@ class _TemperatureCard extends StatelessWidget {
             children: [
               Text(
                 temp,
-                style: const TextStyle(
-                  fontSize: 72, 
-                  fontWeight: FontWeight.bold
-                ),
+                style:
+                    const TextStyle(fontSize: 72, fontWeight: FontWeight.bold),
               ),
-              const Text('°C', style: TextStyle(
-                fontSize: 54,
-                fontWeight: FontWeight.bold
-                )
-              ),
+              const Text('°C',
+                  style: TextStyle(fontSize: 54, fontWeight: FontWeight.bold),),
             ],
           ),
           const SizedBox(height: 10),

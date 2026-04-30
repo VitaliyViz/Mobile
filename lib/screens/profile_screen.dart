@@ -1,6 +1,8 @@
 import 'package:fan_control/logic/cubits/auth_cubit.dart';
 import 'package:fan_control/widgets/btn.dart';
+// import 'package:flash_light_plugin/flash_light_plugin.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -19,6 +21,22 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   bool _isPasswordVisible = false;
+
+  void _showPlatformWarning(BuildContext context, String message) {
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Увага'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
 
   void _confirmLogout(BuildContext context) {
     showDialog<void>(
@@ -65,23 +83,45 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const SizedBox(height: 40),
-                      const CircleAvatar(
-                        radius: 65,
-                        backgroundColor: Colors.white,
-                        child: Icon(
-                          Icons.person,
-                          size: 70,
-                          color: Colors.black
+                      GestureDetector(
+                        onLongPress: () async {
+                          final messengerContext = context;
+                          try {
+                            // await FlashLightPlugin.toggleFlash();
+                            // ignore: avoid_print
+                            print('Виклик MethodChannel: toggleFlash');
+                            _showPlatformWarning(context, 'Метод викликано (імітація для Web/Debug)');
+                          } on PlatformException catch (e) {
+                            if (!messengerContext.mounted) return;
+
+                            _showPlatformWarning(
+                              messengerContext,
+                              e.message ?? 'Error',
+                            );
+                          }
+                        },
+                        child: const CircleAvatar(
+                          radius: 65,
+                          backgroundColor: Colors.white,
+                          child: Icon(
+                            Icons.person,
+                            size: 70,
+                            color: Colors.black,
                           ),
+                        ),
                       ),
                       const SizedBox(height: 20),
                       Text(
                         user?.name ?? 'Loading...',
                         style: const TextStyle(
-                            fontSize: 28, fontWeight: FontWeight.bold),
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                      Text(user?.email ?? '',
-                          style: const TextStyle(color: Colors.grey)),
+                      Text(
+                        user?.email ?? '',
+                        style: const TextStyle(color: Colors.grey),
+                      ),
                       const SizedBox(height: 12),
                       Switch(
                         value: widget.isDark,
@@ -99,15 +139,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       ListTile(
                         title: const Text('Password'),
-                        subtitle: Text(_isPasswordVisible
-                            ? (user?.password ?? '****')
-                            : '********'),
+                        subtitle: Text(
+                          _isPasswordVisible
+                              ? (user?.password ?? '****')
+                              : '********',
+                        ),
                         trailing: IconButton(
-                          icon: Icon(_isPasswordVisible
-                              ? Icons.visibility
-                              : Icons.visibility_off),
-                          onPressed: () => setState(() => 
-                              _isPasswordVisible = !_isPasswordVisible),
+                          icon: Icon(
+                            _isPasswordVisible
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                          ),
+                          onPressed: () => setState(() {
+                            _isPasswordVisible = !_isPasswordVisible;
+                          }),
                         ),
                       ),
                       const Spacer(),
