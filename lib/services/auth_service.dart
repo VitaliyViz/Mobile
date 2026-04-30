@@ -12,7 +12,7 @@ class AuthService {
     final user = await storage.findUser(email);
 
     if (user != null && user.password == password) {
-      await _authRepository.saveUser(user); 
+      await _authRepository.saveUser(user);
       return true;
     }
     return false;
