@@ -1,6 +1,6 @@
 import 'package:fan_control/logic/cubits/auth_cubit.dart';
 import 'package:fan_control/widgets/btn.dart';
-// import 'package:flash_light_plugin/flash_light_plugin.dart';
+import 'package:flash_light_plugin/flash_light_plugin.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -87,10 +87,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         onLongPress: () async {
                           final messengerContext = context;
                           try {
-                            // await FlashLightPlugin.toggleFlash();
-                            // ignore: avoid_print
-                            print('Виклик MethodChannel: toggleFlash');
-                            _showPlatformWarning(context, 'Метод викликано (імітація для Web/Debug)');
+                            await FlashLightPlugin.toggleFlash();
                           } on PlatformException catch (e) {
                             if (!messengerContext.mounted) return;
 
