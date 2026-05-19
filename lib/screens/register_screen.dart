@@ -26,8 +26,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       _nameError = _nameController.text.isEmpty ? 'Enter name' : null;
       _emailError =
           !_emailController.text.contains('@') ? 'Invalid email' : null;
-      _passwordError =
-          _passwordController.text.length < 6 ? 'Too short' : null;
+      _passwordError = _passwordController.text.length < 6 ? 'Too short' : null;
     });
 
     if (_nameError == null && _emailError == null && _passwordError == null) {

@@ -41,7 +41,7 @@ class AuthProvider extends ChangeNotifier {
   Future<void> checkAuth() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final String? token = prefs.getString('auth_token');
-    
+
     if (token != null) {
       _user = await _authService.getCurrentUser();
       if (_user != null) {
@@ -56,7 +56,7 @@ class AuthProvider extends ChangeNotifier {
     if (success) {
       final SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setString('auth_token', 'fake_token');
-      
+
       _user = await _authService.getCurrentUser();
       _isAuthenticated = true;
       notifyListeners();
@@ -73,11 +73,13 @@ class AuthProvider extends ChangeNotifier {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove('auth_token');
     await _authService.logout();
-    
+
     _user = null;
     _isAuthenticated = false;
     notifyListeners();
   }
 
-  Future<User?> getUser() async => _user ?? _authService.getCurrentUser();
+  Future<User?> getUser() async {
+    return _user ?? await _authService.getCurrentUser();
+  }
 }
